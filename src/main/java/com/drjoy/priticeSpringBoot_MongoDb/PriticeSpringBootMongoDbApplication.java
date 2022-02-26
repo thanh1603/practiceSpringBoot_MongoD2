@@ -8,6 +8,7 @@ public class PriticeSpringBootMongoDbApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PriticeSpringBootMongoDbApplication.class, args);
+		System.out.println("test");
 	}
 
 }
