@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
                     User user = userActive.get();
 
 
-                    if (user.getListFriendId().isEmpty()) {
+                    if (user.getListFriendId() == null) {
                         List<String> list = new ArrayList<>();
                         list.add(requestFriend.getId());
                         user.setListFriendId(list);
