@@ -11,5 +11,5 @@ import java.util.List;
 public class Friend {
     @Id
     private String id;
-    private List<String> listFriend;
+    private List<String> listFriendId;
 }

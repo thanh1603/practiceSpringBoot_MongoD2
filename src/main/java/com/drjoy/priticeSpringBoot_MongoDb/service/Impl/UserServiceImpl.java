@@ -3,17 +3,24 @@ package com.drjoy.priticeSpringBoot_MongoDb.service.Impl;
 import com.drjoy.priticeSpringBoot_MongoDb.common.Constant;
 import com.drjoy.priticeSpringBoot_MongoDb.common.ResponseObject;
 import com.drjoy.priticeSpringBoot_MongoDb.domain.dto.UserDto;
+import com.drjoy.priticeSpringBoot_MongoDb.domain.model.Friend;
 import com.drjoy.priticeSpringBoot_MongoDb.domain.model.User;
 import com.drjoy.priticeSpringBoot_MongoDb.request.RequestFriend;
+import com.drjoy.priticeSpringBoot_MongoDb.responsitory.FriendReponsitory;
 import com.drjoy.priticeSpringBoot_MongoDb.responsitory.UserReponsitory;
 import com.drjoy.priticeSpringBoot_MongoDb.security.UserDetailsImpl;
 import com.drjoy.priticeSpringBoot_MongoDb.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+//import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +30,16 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     @Autowired
+    FriendReponsitory friendReponsitory;
+
+    @Autowired
     UserReponsitory userReponsitory;
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     @Override
     public ResponseEntity<ResponseObject> createUser(UserDto dto) {
@@ -38,16 +51,19 @@ public class UserServiceImpl implements UserService {
                 );
             } else {
                 User user = new User();
+                Friend friend = new Friend();
+                friendReponsitory.save(friend);
 //                user.setId(dto.getId());
                 user.setName(dto.getName());
                 user.setEmail(dto.getEmail());
                 user.setPassword(passwordEncoder.encode(dto.getPassword()));
-                user.setGroupId(dto.getGroupId());
+//                user.setGroupId(dto.getGroupId());
+//                user.setFriendId(friend.getId());
 //                user.getListFriendId().add(dto.getId());
 //                user.setListPostId(dto.getListPostId());
-                user.setRoleGroup(dto.getRoleGroup());
+                //user.setRoleGroup(dto.getRoleGroup());
 
-                user.setRole(Constant.ROLE.user);
+               // user.setRole(Constant.ROLE.user);
 
                 userReponsitory.save(user);
                 return ResponseEntity.status(HttpStatus.OK).body(
@@ -57,57 +73,167 @@ public class UserServiceImpl implements UserService {
             }
 
         }
-        return null;
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "data null", "")
+        );
     }
 
     @Override
     public ResponseEntity<ResponseObject> addFriend(RequestFriend requestFriend) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl currentLoginUser = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (requestFriend.getId() != null) {
 
-            Optional<User> findFriendById = userReponsitory.findById(requestFriend.getId());
-            if (findFriendById.isPresent()) {
-                Optional<User> userActive = userReponsitory.findById(userDetails.getId());
-                if (userActive.isPresent()) {
-                    User user = userActive.get();
-
-
-                    if (user.getListFriendId() == null) {
-                        List<String> list = new ArrayList<>();
-                        list.add(requestFriend.getId());
-                        user.setListFriendId(list);
-//                        user.getListPostId().addAll(list);
-                    }else {
-                        List<String> listFriend;
-                        listFriend = user.getListFriendId();
-//                        listFriend.stream().filter(lf->lf.equalsIgnoreCase(requestFriend.getId())).re
-                        for (String lf: listFriend) {
-                            if (lf.equals(requestFriend.getId())){
-                                listFriend.remove(requestFriend.getId());
-                                userReponsitory.save(user);
-                                return ResponseEntity.status(HttpStatus.OK).body(
-                                        new ResponseObject("ok", "remove friend success", "")
-                                );
-                            }
-
-                        }
-
-                        user.getListFriendId().add(requestFriend.getId());
-                        userReponsitory.save(user);
+            Optional<User> targetUserOp = userReponsitory.findById(requestFriend.getId());
+            if (targetUserOp.isPresent()) {
+                Optional<User> currentUserOp = userReponsitory.findById(currentLoginUser.getId());
+                User targetUser = targetUserOp.get();
+                ArrayList listSave = new ArrayList();
+                if (currentUserOp.isPresent()){
+                    User currentUser = currentUserOp.get();
+                    // Check
+                    List<String> currentFriendIds = Optional.ofNullable(currentUser.getFriendId())
+                            .orElse(new ArrayList<>());
+                    List<String> targetFriendIds = Optional.ofNullable(targetUser.getFriendId())
+                            .orElse(new ArrayList<>());
+                    if (currentFriendIds.size() >= 100 || targetFriendIds.size() >= 100) {
                         return ResponseEntity.status(HttpStatus.OK).body(
-                                new ResponseObject("ok", "add friend success", "")
+                                new ResponseObject("ok", "you full friend ", "")
                         );
-
                     }
+                    currentFriendIds.add(targetUser.getId());
+                    currentUser.setFriendId(currentFriendIds);
+                    listSave.add(currentUser);
+
+                    targetFriendIds.add(currentUser.getId());
+                    targetUser.setFriendId(targetFriendIds);
+                    listSave.add(targetUser);
+
+//                    if (CollectionUtils.isEmpty(currentUser.getFriendId())) {
+//                        List<String> listFriendUserId = new ArrayList<>();
+//                        listFriendUserId.add(targetUser.getId());
+//                        currentUser.setFriendId(listFriendUserId);
+//                    }else {
+//                        if (currentUser.getGroupId().size()< 100) {
+//                            currentUser.getFriendId().add(targetUser.getId());
+//                        }else {
+//                            return ResponseEntity.status(HttpStatus.OK).body(
+//                                    new ResponseObject("ok", "you full friend ", "")
+//                            );
+//                        }
+//
+//
+//                    }
+
+//                    if (CollectionUtils.isEmpty(targetUser.getFriendId())) {
+//                        List<String> listFriendUserId = new ArrayList<>();
+//                        listFriendUserId.add(currentUser.getId());
+//                        targetUser.setFriendId(listFriendUserId);
+//                    }else {
+//                        if (targetUser.getFriendId().size()<100) {
+//                            targetUser.getFriendId().add(currentUser.getId());
+//                        }else {
+//                            return ResponseEntity.status(HttpStatus.OK).body(
+//                                    new ResponseObject("ok", "your friend full friend ", "")
+//                            );
+//                        }
+//
+//                    }
 
                 }
-            }
 
+                userReponsitory.saveAll(listSave);
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "add friend success", "")
+                );
+
+            }
 
         }
 
-        return null;
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "data null", "")
+        );
     }
+
+    @Override
+    public ResponseEntity<ResponseObject> removeFriend(RequestFriend requestFriend) {
+        UserDetailsImpl currentLoginUser = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (requestFriend.getId() != null) {
+            Optional<User> targetUserOp = userReponsitory.findById(requestFriend.getId());
+            if (targetUserOp.isPresent()) {
+                ArrayList listSave = new ArrayList();
+                Optional<User> currentUserOp = userReponsitory.findById(currentLoginUser.getId());
+                User targetUser = targetUserOp.get();
+                if (currentUserOp.isPresent()){
+                    User currentUser = currentUserOp.get();
+                    List<String> listFriendIdTarget = targetUser.getFriendId();
+//                    listFriendIdTarget.stream().filter(lft1 -> listFriendIdTarget.equals(currentUser.getFriendId())));
+
+                    for (String lft: listFriendIdTarget) {
+                        if (lft.equals(currentUser.getId()))
+                            listFriendIdTarget.remove(currentUser.getId());
+                            listSave.add(targetUser);
+                    }
+                    List<String> listFriendCurrent = currentUser.getFriendId();
+                    for (String lfc : listFriendCurrent) {
+                        if (lfc.equals(targetUser.getId()))
+                            listFriendCurrent.remove(targetUser.getId());
+                            listSave.add(currentUser);
+                    }
+
+                }
+//                if (CollectionUtils.isEmpty(listSave)){
+//
+//                }
+
+                userReponsitory.saveAll(listSave);
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "remove friend success", "")
+                );
+
+            }
+
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "data null", "")
+        );
+    }
+
+    @Override
+    public List<User> findUserName(String name) {
+        if (name != null && name.length()==0) {
+            return userReponsitory.findAll();
+        } else {
+            Query query = new Query();
+            Criteria criteria = Criteria.where(Constant.USER.NAME).regex(name, "$i");
+//            Criteria criteria = Criteria.where(Constant.USER.NAME).is(name);
+            query.addCriteria(criteria);
+            return mongoTemplate.find(query, User.class);
+        }
+
+
+    }
+
+//    private Criteria getCriteriaListSchedulePatternByCondition(String keyword) {
+//        Criteria criteria = new Criteria();
+//        List<Criteria> criteriaList = new ArrayList<>();
+//
+//        if (StringUtils.isNotBlank(keyword)) {
+//            Criteria searchKeyWord = new Criteria();
+//            String regexKeyWord = MongoRegexCreator.INSTANCE
+//                    .toRegularExpression(keyword, MongoRegexCreator.MatchMode.CONTAINING);
+//            assert regexKeyWord != null;
+//            searchKeyWord.orOperator(where(PATTERN_NAME).regex(regexKeyWord, "i"));
+//            criteriaList.add(searchKeyWord);
+//        }
+//
+//        if (CollectionUtils.isEmpty(criteriaList)) {
+//            return criteria;
+//        }
+//
+//        return criteria.andOperator(criteriaList.toArray(new Criteria[0]));
+//    }
+
 
 
 }

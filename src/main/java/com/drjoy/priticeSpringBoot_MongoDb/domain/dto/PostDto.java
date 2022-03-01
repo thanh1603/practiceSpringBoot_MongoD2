@@ -17,4 +17,5 @@ public class PostDto {
     private String userId;
     private String content;
     private List<String> listCommentId;
+    private List<String> listUserId;
 }

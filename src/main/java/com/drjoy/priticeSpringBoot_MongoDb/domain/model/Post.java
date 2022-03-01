@@ -5,6 +5,8 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -18,5 +20,6 @@ public class Post {
     private String userId;
     private String content;
     private List<String> listCommentId;
+    private List<String> listUserId;
 
 }

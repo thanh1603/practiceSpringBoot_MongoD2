@@ -16,5 +16,6 @@ public class CommentDto {
     private String content;
     private String userId;
     private String postId;
+    private Integer like = 0;
     private List<String> listUserId;
 }

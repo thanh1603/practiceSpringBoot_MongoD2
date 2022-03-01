@@ -16,9 +16,11 @@ public class UserDto {
     private String name;
     private String email;
     private String password;
-    private String groupId;
-    private List<String> listFriendId;
+    private List<String> groupId;
+    private List<String> friendId;
     private List<String> listPostId;
     private String  role;
     private String roleGroup;
+
+
 }
