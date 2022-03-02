@@ -246,25 +246,6 @@ public class UserServiceImpl implements UserService {
 //    }
 
 
-    private Criteria getCriteriaListSchedulePatternByCondition(String keyword) {
-        Criteria criteria = new Criteria();
-        List<Criteria> criteriaList = new ArrayList<>();
-
-        if (StringUtils.isNotBlank(keyword)) {
-            Criteria searchKeyWord = new Criteria();
-            String regexKeyWord = MongoRegexCreator.INSTANCE
-                    .toRegularExpression(keyword, MongoRegexCreator.MatchMode.CONTAINING);
-            assert regexKeyWord != null;
-            searchKeyWord.orOperator(where(PATTERN_NAME).regex(regexKeyWord, "i"));
-            criteriaList.add(searchKeyWord);
-        }
-
-        if (CollectionUtils.isEmpty(criteriaList)) {
-            return criteria;
-        }
-
-        return criteria.andOperator(criteriaList.toArray(new Criteria[0]));
-    }
 
 
 
