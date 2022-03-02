@@ -134,6 +134,7 @@ public class CommentServiceImpl implements CommentService {
                 commentCurrent.setLike(commentCurrent.getLike()+1);
                 if (CollectionUtils.isEmpty(commentCurrent.getListUserId())){
                     List<String> listId = new ArrayList<>();
+
                     listId.add(userCurrent.getId());
                     commentCurrent.setListUserId(listId);
                 }else {

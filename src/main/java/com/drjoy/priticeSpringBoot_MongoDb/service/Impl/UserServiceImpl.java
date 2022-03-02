@@ -25,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -87,7 +88,7 @@ public class UserServiceImpl implements UserService {
             if (targetUserOp.isPresent()) {
                 Optional<User> currentUserOp = userReponsitory.findById(currentLoginUser.getId());
                 User targetUser = targetUserOp.get();
-                ArrayList listSave = new ArrayList();
+                List<User> listSave = new ArrayList();
                 if (currentUserOp.isPresent()){
                     User currentUser = currentUserOp.get();
                     // Check
@@ -161,25 +162,34 @@ public class UserServiceImpl implements UserService {
         if (requestFriend.getId() != null) {
             Optional<User> targetUserOp = userReponsitory.findById(requestFriend.getId());
             if (targetUserOp.isPresent()) {
-                ArrayList listSave = new ArrayList();
+                List<User> listSave = new ArrayList();
                 Optional<User> currentUserOp = userReponsitory.findById(currentLoginUser.getId());
                 User targetUser = targetUserOp.get();
                 if (currentUserOp.isPresent()){
                     User currentUser = currentUserOp.get();
                     List<String> listFriendIdTarget = targetUser.getFriendId();
-//                    listFriendIdTarget.stream().filter(lft1 -> listFriendIdTarget.equals(currentUser.getFriendId())));
-
-                    for (String lft: listFriendIdTarget) {
-                        if (lft.equals(currentUser.getId()))
-                            listFriendIdTarget.remove(currentUser.getId());
-                            listSave.add(targetUser);
-                    }
                     List<String> listFriendCurrent = currentUser.getFriendId();
-                    for (String lfc : listFriendCurrent) {
-                        if (lfc.equals(targetUser.getId()))
-                            listFriendCurrent.remove(targetUser.getId());
-                            listSave.add(currentUser);
-                    }
+//                    listFriendIdTarget.removeIf(currentUser.getId())
+                    List<String>  listTargetUser=  listFriendIdTarget.stream().filter(idFriend -> !idFriend.equals(currentUser.getId())).collect(Collectors.toList());
+                    listSave.add(targetUser);
+                    List<String>  list=  listFriendCurrent.stream().filter(idFriend -> !idFriend.equals(targetUser.getId())).collect(Collectors.toList());
+                    listSave.add(currentUser);
+
+//                    for (String lft: listFriendIdTarget) {
+//                        if (lft.equals(currentUser.getId())){
+//                            listFriendIdTarget.remove(currentUser.getId());
+//                            listSave.add(targetUser);
+//                        }
+//
+//                    }
+
+//                    for (String lfc : listFriendCurrent) {
+//                        if (lfc.equals(targetUser.getId())){
+//                            listFriendCurrent.remove(targetUser.getId());
+//                            listSave.add(currentUser);
+//                        }
+//
+//                    }
 
                 }
 //                if (CollectionUtils.isEmpty(listSave)){
@@ -205,6 +215,7 @@ public class UserServiceImpl implements UserService {
             return userReponsitory.findAll();
         } else {
             Query query = new Query();
+            assert name != null;
             Criteria criteria = Criteria.where(Constant.USER.NAME).regex(name, "$i");
 //            Criteria criteria = Criteria.where(Constant.USER.NAME).is(name);
             query.addCriteria(criteria);
@@ -233,6 +244,27 @@ public class UserServiceImpl implements UserService {
 //
 //        return criteria.andOperator(criteriaList.toArray(new Criteria[0]));
 //    }
+
+
+    private Criteria getCriteriaListSchedulePatternByCondition(String keyword) {
+        Criteria criteria = new Criteria();
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        if (StringUtils.isNotBlank(keyword)) {
+            Criteria searchKeyWord = new Criteria();
+            String regexKeyWord = MongoRegexCreator.INSTANCE
+                    .toRegularExpression(keyword, MongoRegexCreator.MatchMode.CONTAINING);
+            assert regexKeyWord != null;
+            searchKeyWord.orOperator(where(PATTERN_NAME).regex(regexKeyWord, "i"));
+            criteriaList.add(searchKeyWord);
+        }
+
+        if (CollectionUtils.isEmpty(criteriaList)) {
+            return criteria;
+        }
+
+        return criteria.andOperator(criteriaList.toArray(new Criteria[0]));
+    }
 
 
 
