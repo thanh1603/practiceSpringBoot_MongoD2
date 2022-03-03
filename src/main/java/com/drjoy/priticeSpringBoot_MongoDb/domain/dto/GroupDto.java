@@ -11,7 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 public class GroupDto {
 
-    private  String id;
     private String name;
-    private List<String> listUserId;
 }

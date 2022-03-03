@@ -11,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FriendDto {
-    private String id;
-    private List<String> listFriend;
+//    private String id;
+//    private List<String> listFriend;
 }

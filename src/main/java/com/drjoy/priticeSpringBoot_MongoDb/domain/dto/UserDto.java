@@ -12,15 +12,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
-    private String id;
+
     private String name;
     private String email;
     private String password;
-    private List<String> groupId;
-    private List<String> friendId;
-    private List<String> listPostId;
-    private String  role;
-    private String roleGroup;
+
 
 
 }

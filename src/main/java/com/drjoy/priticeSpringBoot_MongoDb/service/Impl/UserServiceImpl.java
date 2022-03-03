@@ -52,8 +52,8 @@ public class UserServiceImpl implements UserService {
                 );
             } else {
                 User user = new User();
-                Friend friend = new Friend();
-                friendReponsitory.save(friend);
+//                Friend friend = new Friend();
+//                friendReponsitory.save(friend);
 //                user.setId(dto.getId());
                 user.setName(dto.getName());
                 user.setEmail(dto.getEmail());
@@ -139,13 +139,14 @@ public class UserServiceImpl implements UserService {
 //                        }
 //
 //                    }
+                    userReponsitory.saveAll(listSave);
+                    return ResponseEntity.status(HttpStatus.OK).body(
+                            new ResponseObject("ok", "add friend success", "")
+                    );
 
                 }
 
-                userReponsitory.saveAll(listSave);
-                return ResponseEntity.status(HttpStatus.OK).body(
-                        new ResponseObject("ok", "add friend success", "")
-                );
+
 
             }
 
@@ -172,8 +173,11 @@ public class UserServiceImpl implements UserService {
 //                    listFriendIdTarget.removeIf(currentUser.getId())
                     List<String>  listTargetUser=  listFriendIdTarget.stream().filter(idFriend -> !idFriend.equals(currentUser.getId())).collect(Collectors.toList());
                     listSave.add(targetUser);
-                    List<String>  list=  listFriendCurrent.stream().filter(idFriend -> !idFriend.equals(targetUser.getId())).collect(Collectors.toList());
+                    targetUser.setFriendId(listTargetUser);
+
+                    List<String>  listCurrentUser=  listFriendCurrent.stream().filter(idFriend -> !idFriend.equals(targetUser.getId())).collect(Collectors.toList());
                     listSave.add(currentUser);
+                    currentUser.setFriendId(listCurrentUser);
 
 //                    for (String lft: listFriendIdTarget) {
 //                        if (lft.equals(currentUser.getId())){

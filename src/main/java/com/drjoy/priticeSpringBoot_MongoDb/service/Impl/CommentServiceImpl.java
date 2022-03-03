@@ -59,13 +59,18 @@ public class CommentServiceImpl implements CommentService {
                         comment.setUserId(userDetails.getId());
                         comment.setPostId(postComment.getId());
                         commentReponsitory.save(comment);
-                        if (CollectionUtils.isEmpty(postComment.getListCommentId()) ) {
-                            List<String> list = new ArrayList<>();
-                            list.add(comment.getId());
-                            postComment.setListCommentId(list);
-                        } else {
-                            postComment.getListCommentId().add(userDetails.getId());
-                        }
+                        List<String> listMyPostComment =Optional.ofNullable(postComment.getListCommentId())
+                                .orElse(new ArrayList<>());
+                        postComment.setListCommentId(listMyPostComment);
+                        listMyPostComment.add(userActive.getId());
+
+//                        if (CollectionUtils.isEmpty(postComment.getListCommentId()) ) {
+//                            List<String> list = new ArrayList<>();
+//                            list.add(comment.getId());
+//                            postComment.setListCommentId(list);
+//                        } else {
+//                            postComment.getListCommentId().add(userDetails.getId());
+//                        }
                         postReponsitory.save(postComment);
                         return ResponseEntity.status(HttpStatus.OK).body(
                                 new ResponseObject("ok", "comment my post success", "")
@@ -79,13 +84,17 @@ public class CommentServiceImpl implements CommentService {
                                 comment.setUserId(userDetails.getId());
                                 comment.setPostId(postComment.getId());
                                 commentReponsitory.save(comment);
-                                if (CollectionUtils.isEmpty(postComment.getListCommentId())) {
-                                    List<String> list = new ArrayList<>();
-                                    list.add(comment.getId());
-                                    postComment.setListCommentId(list);
-                                } else {
-                                    postComment.getListCommentId().add(comment.getId());
-                                }
+                                List<String> listPostComment =Optional.ofNullable(postComment.getListCommentId())
+                                        .orElse(new ArrayList<>());
+                                postComment.setListCommentId(listPostComment);
+                                listPostComment.add(comment.getId());
+//                                if (CollectionUtils.isEmpty(postComment.getListCommentId())) {
+//                                    List<String> list = new ArrayList<>();
+//                                    list.add(comment.getId());
+//                                    postComment.setListCommentId(list);
+//                                } else {
+//                                    postComment.getListCommentId().add(comment.getId());
+//                                }
                                 postReponsitory.save(postComment);
                                 return ResponseEntity.status(HttpStatus.OK).body(
                                         new ResponseObject("ok", "comment success", "")
@@ -132,14 +141,21 @@ public class CommentServiceImpl implements CommentService {
             if (comment.isPresent()) {
                 Comment commentCurrent = comment.get();
                 commentCurrent.setLike(commentCurrent.getLike()+1);
-                if (CollectionUtils.isEmpty(commentCurrent.getListUserId())){
-                    List<String> listId = new ArrayList<>();
 
-                    listId.add(userCurrent.getId());
-                    commentCurrent.setListUserId(listId);
-                }else {
-                    commentCurrent.getListUserId().add(userCurrent.getId());
-                }
+                List<String> listIdUser = Optional.ofNullable(commentCurrent.getListUserId())
+                        .orElse(new ArrayList<>());
+
+                listIdUser.add(userCurrent.getId());
+                commentCurrent.setListUserId(listIdUser);
+
+//                if (CollectionUtils.isEmpty(commentCurrent.getListUserId())){
+//                    List<String> listId = new ArrayList<>();
+//
+//                    listId.add(userCurrent.getId());
+//                    commentCurrent.setListUserId(listId);
+//                }else {
+//                    commentCurrent.getListUserId().add(userCurrent.getId());
+//                }
 
                 commentReponsitory.save(commentCurrent);
                 return ResponseEntity.status(HttpStatus.OK).body(

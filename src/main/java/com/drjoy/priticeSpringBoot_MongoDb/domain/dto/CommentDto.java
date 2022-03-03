@@ -12,10 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentDto {
-    private String id;
+
     private String content;
-    private String userId;
-    private String postId;
-    private Integer like = 0;
-    private List<String> listUserId;
+
 }

@@ -10,12 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostDto {
-    private String id;
     private String title;
-    private Integer like = 0;
-    private String createTime;
-    private String userId;
     private String content;
-    private List<String> listCommentId;
-    private List<String> listUserId;
+
 }

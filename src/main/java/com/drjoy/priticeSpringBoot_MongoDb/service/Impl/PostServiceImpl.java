@@ -108,13 +108,18 @@ public class PostServiceImpl implements PostService {
                         for (String lfa : listFriendActive) {
                             if (lfa.equals(check.getId())) {
                                 postCurrent.setLike(postCurrent.getLike()+1);
-                                if (CollectionUtils.isEmpty(postCurrent.getListUserId())){
-                                    List<String> listId = new ArrayList<>();
-                                    listId.add(userActive.getId());
-                                    postCurrent.setListUserId(listId);
-                                } else {
-                                    postCurrent.getListUserId().add(userActive.getId());
-                                }
+                                List<String> listIdUserPost = Optional.ofNullable(postCurrent.getListUserId())
+                                        .orElse(new ArrayList<>());
+                                postCurrent.setListUserId(listIdUserPost);
+                                listIdUserPost.add(userActive.getId());
+
+//                                if (CollectionUtils.isEmpty(postCurrent.getListUserId())){
+//                                    List<String> listId = new ArrayList<>();
+//                                    listId.add(userActive.getId());
+//                                    postCurrent.setListUserId(listId);
+//                                } else {
+//                                    postCurrent.getListUserId().add(userActive.getId());
+//                                }
                                 postReponsitory.save(postCurrent);
                                 return ResponseEntity.status(HttpStatus.OK).body(
                                         new ResponseObject("ok", "like  post success", "")
