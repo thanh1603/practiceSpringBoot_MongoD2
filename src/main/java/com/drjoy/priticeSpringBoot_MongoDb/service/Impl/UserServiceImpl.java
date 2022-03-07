@@ -80,6 +80,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ResponseEntity<ResponseObject> updateUser(UserDto dto) {
+        UserDetailsImpl currentLoginUser = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (dto != null) {
+            Optional<User> currentUserOp = userReponsitory.findById(currentLoginUser.getId());
+            if (currentUserOp.isPresent()) {
+                User currentUser = currentUserOp.get();
+                currentUser.setName(dto.getName());
+                currentUser.setEmail(dto.getEmail());
+                currentUser.setPassword(dto.getPassword());
+                userReponsitory.save(currentUser);
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        new ResponseObject("ok", "update success ", "New name : "+currentUser.getName())
+                );
+
+            }
+
+        }
+
+
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject("ok", "data null", "")
+        );
+    }
+
+    @Override
     public ResponseEntity<ResponseObject> addFriend(RequestFriend requestFriend) {
         UserDetailsImpl currentLoginUser = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (requestFriend.getId() != null) {

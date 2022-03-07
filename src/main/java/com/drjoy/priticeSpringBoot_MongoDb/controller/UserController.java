@@ -37,6 +37,11 @@ public class UserController {
         return this.userService.removeFriend(requestFriend);
     }
 
+    @PutMapping("/upateUser")
+    public ResponseEntity<ResponseObject> upateUser (@RequestBody UserDto dto) {
+        return this.userService.updateUser(dto);
+    }
+
 
     @GetMapping("/findByName")
     public List<User> findUserName(@RequestParam(defaultValue = "") String name){

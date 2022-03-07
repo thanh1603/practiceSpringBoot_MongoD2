@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface UserService {
     ResponseEntity<ResponseObject> createUser(UserDto dto);
+    ResponseEntity<ResponseObject> updateUser(UserDto dto);
     ResponseEntity<ResponseObject> addFriend(RequestFriend requestFriend);
     ResponseEntity<ResponseObject> removeFriend(RequestFriend requestFriend);
     List<User> findUserName(String name);
